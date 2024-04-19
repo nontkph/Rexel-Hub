@@ -1,0 +1,240 @@
+--Libraries
+
+local Libraries = loadstring(game:HttpGet("https://raw.githubusercontent.com/nontkph/Rexel-Hub/main/Libraries"))()
+local HttpService = game:GetService("HttpService")
+local LibObject = Libraries.new(" Rexel Hub | Premium Script v.0.1 ")
+
+--
+Players = game:GetService("Players")
+User = Players.LocalPlayer
+RunService = game:GetService("RunService")
+VirtualUser = game:GetService('VirtualUser')
+TeleportService = cloneref(game:GetService("TeleportService"))
+--
+queueteleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+httprequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+PlaceId, JobId = game.PlaceId, game.JobId
+--
+
+getfenv().Loaded = getfenv().Loaded or false
+-- Loading Config
+print("Rexel Hub : Loading Config. . .")
+getfenv().Config = {
+	["AutoFarm"] = false;
+	["Tool"] = "Combat";
+	["instant"] = true;
+
+	["AutoSukuna"] = false;
+	
+	["Quest"] = "1-15";
+	["Distance"] = 5;
+}
+
+local PathConfig = `Rexel Hub/Last Pirate_{User.UserId/2}_Config.lua`
+if not isfile("Rexel Hub") then  makefolder("Rexel Hub") warn("Create new Folder") end
+if not isfile(PathConfig) then 
+	appendfile(PathConfig, HttpService:JSONEncode(getfenv().Config))
+	warn("Create File Config.")
+end
+
+getfenv().Config = HttpService:JSONDecode( readfile(PathConfig) ) or getfenv().Config
+getfenv().Loaded = true
+repeat task.wait() until getfenv().Loaded
+
+User.DisplayName = "Your mom"
+User.Name = "Your mom"
+game:GetService("Players").LocalPlayer.PlayerGui.NewInterGui.Frame.Username.Text = `Username: Your mom`
+
+function Change(index, value)
+	getfenv().Config[index] = value
+	writefile(PathConfig, HttpService:JSONEncode(getfenv().Config))
+end
+
+local Pages = {
+	["Main"] = LibObject:AddPage( "Main" );
+	["Fruit"] = LibObject:AddPage( "Fruit" );
+	["Teleport"] = LibObject:AddPage( "Teleport" );
+	["Combat"] = LibObject:AddPage( "Combat" );
+	["Misc"] = LibObject:AddPage( "Misc" );
+};
+
+local Groups = {
+	["AutoFarm"] = Pages["Main"]:Group("Auto Farm", "Left");
+	["Comfig Autofarm"] = Pages["Main"]:Group("Config", "Right");
+	["Items"] = Pages["Main"]:Group("Config", "Left");
+	["Beta Feature"] = Pages["Main"]:Group("BETA FEATURE", "Right");
+};
+
+-- Find Quests
+local Path : Folder = workspace["ShipNpc and SetSpawn NPC"]
+local Quests = {}
+local method = {}
+local FormatTarget = {}
+local Tools = {}
+-- Auto Farm Config
+local dropdown_Quest = Groups["Comfig Autofarm"]:DropDown( "Quest", {}, false, (getfenv().Config["Quest"] or "1-15"), function(select)
+	Change( "Quest", select )
+end)
+
+local dropdown_Tool = Groups["Comfig Autofarm"]:DropDown( "Tool", {}, false, (getfenv().Config["Tool"] or "Combat"), function(select)
+	Change( "Tool", select )
+end)
+
+function RefreshQuest()
+	Quests = {}
+	FormatTarget = {}
+	for index, value in next, Path:GetChildren() do
+		if value:IsA("Model") and value:FindFirstChild("เเสงเควส") then
+			local spil = string.split(value.Name, "-")
+			if #spil == 2 then
+				table.insert(Quests, value.Name)
+				FormatTarget[value.Name] = (value:FindFirstChild("Click") or value:FindFirstChild("MarineClick")).Quest.Value
+			end
+		end
+	end
+
+	-- Update Drop Down
+	dropdown_Quest:Set(Quests)
+end
+RefreshQuest()
+
+function RefreshTool()
+	Tools = {}
+	
+	for i, v in next, User.Backpack:GetChildren() do
+		if v:IsA("Tool") and not v:FindFirstChild("DF") then
+			table.insert( Tools, v.Name )
+		end
+	end
+	dropdown_Tool:Set(Tools)
+end
+RefreshTool()
+
+Groups["Comfig Autofarm"]:Button("Refresh Tool", RefreshTool)
+Groups["Comfig Autofarm"]:Button("Refresh Quest", RefreshQuest)
+
+-- method
+function method.ChackTag(Folder : Folder)
+	local result = false
+	if Folder then
+		for i, v in next, Folder:GetChildren() do
+			if v:IsA("ObjectValue") then
+				if v.Value == User then
+					result  = true
+					break
+				end
+			end
+		end
+	end
+	return result
+end
+
+function method.Equip(tool : Tool)
+	if tool and tool:IsA("Tool") then
+		User.Character:FindFirstChildOfClass("Humanoid"):EquipTool(tool)
+	end
+end
+
+function method.Click()
+	VirtualUser:CaptureController()
+	VirtualUser:Button1Down(Vector2.new(1280, 672))
+end
+
+function method.GetTool(ToolName : string)
+	local result = nil
+	
+	for i, v in next, User.Backpack:GetChildren() do
+		if v:IsA("Tool") and v.Name == ToolName then
+			result = v
+			break
+		end
+	end
+	
+	return result
+end
+
+function method.HopServer()
+	if httprequest then
+		print("ServerHop. . .")
+        local servers = {}
+        local req = httprequest({Url = string.format("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true", PlaceId)})
+        local body = HttpService:JSONDecode(req.Body)
+
+        if body and body.data then
+            for i, v in next, body.data do
+                if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= JobId then
+                    table.insert(servers, 1, v.id)
+                end
+            end
+        end
+
+        if #servers > 0 then
+			Teleporting = true
+            TeleportService:TeleportToPlaceInstance(PlaceId, servers[math.random(1, #servers)], Players.LocalPlayer)
+        else
+            return print("Serverhop", "Couldn't find a server.")
+        end
+    else
+        print("Incompatible Exploit", "Your exploit does not support this command (missing request)")
+    end
+end
+
+-- Auto Farm
+local Title_Label = Groups.AutoFarm:label(" : Auto Farm :")
+Groups.AutoFarm:Line()
+Groups.AutoFarm:Toggle("Auto Farm", (getfenv().Config["AutoFarm"] or false), function(bool)
+	Change("AutoFarm", bool)
+	print(bool)
+	if getfenv().Config.AutoFarm then
+		repeat task.wait() 
+			for _, enemy : Model in next, workspace.Lives:GetChildren() do wait()
+				if not getfenv().Config.AutoFarm then break end
+				if (if getfenv().Config.AutoSukuna then not workspace.Lives:FindFirstChild("Sukuna") else true ) and enemy:FindFirstChild("Folder") and enemy:FindFirstChildOfClass("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") then
+					
+					repeat task.wait()
+						if method.ChackTag(enemy:FindFirstChild("Folder")) then
+							enemy:FindFirstChild("Humanoid").Health = 0
+							warn("killed : ", enemy)
+						else
+							User.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
+							method.Equip( method.GetTool(getfenv().Config.Tool) )
+							method.Click()
+						end
+					until ( if getfenv().Config.AutoSukuna then workspace.Lives:FindFirstChild("Sukuna") ~= nil else false ) or not getfenv().Config.AutoFarm or not User.Character or User.Character:FindFirstChild("Humanoid").Health <= 0 or enemy:FindFirstChild("Humanoid").Health <= 0
+					
+				end
+			end
+		until not getfenv().Config.AutoFarm
+	end
+
+end)
+
+Groups.AutoFarm:Toggle("Auto Sukuna", (getfenv().Config["AutoSukuna"] or false), function(bool)
+	Change("AutoSukuna", bool)
+	if getfenv().Config.AutoSukuna then
+		repeat task.wait() 
+			if workspace.Lives:FindFirstChild("Sukuna") then
+			for _, enemy : Model in next, workspace.Lives:GetChildren() do wait()
+				if not getfenv().Config.AutoSukuna then break end
+				if enemy:FindFirstChild("Folder") and enemy.Name == "Sukuna" and enemy:FindFirstChildOfClass("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") then
+					
+					repeat task.wait()
+						if method.ChackTag(enemy:FindFirstChild("Folder")) then
+							enemy:FindFirstChild("Humanoid").Health = 0
+							warn("killed : ", enemy)
+						else
+							User.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
+							method.Equip( method.GetTool(getfenv().Config.Tool) )
+							method.Click()
+						end
+					until not getfenv().Config.AutoSukuna or not User.Character or User.Character:FindFirstChild("Humanoid").Health <= 0 or enemy:FindFirstChild("Humanoid").Health <= 0
+					
+				end
+			end
+		else
+			wait(3)
+			method.HopServer()
+		end
+		until not getfenv().Config.AutoSukuna
+	end
+end)
