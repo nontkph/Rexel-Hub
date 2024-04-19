@@ -1057,9 +1057,11 @@ function Librarie:AddPage( PageName : string )
 					if Items.Visible then
 						Items.Visible = false
 						dropdown.ZIndex = 2
+						object1.ZIndex = 1
 					else
 						Items.Visible = true
 						dropdown.ZIndex = 99
+						object1.ZIndex = 99
 						UpdateDropdown()
 					end
 				end)
