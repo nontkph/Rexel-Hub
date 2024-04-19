@@ -243,9 +243,15 @@ Groups.AutoFarm:Toggle("Auto Sukuna", (getfenv().Config["AutoSukuna"] or false),
 				end
 			end
 		else
-			wait(30)
-			method.HopServer()
+			if getfenv().Config["Sukuna Hop"] then
+				wait(30)
+				method.HopServer()
+			end
 		end
 		until not getfenv().Config.AutoSukuna
 	end
+end)
+
+Groups.AutoFarm:Toggle("Sukuna Hop", (getfenv().Config["Sukuna Hop"] or false), function(bool)
+	Change("Sukuna Hop", bool)
 end)
