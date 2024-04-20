@@ -25,6 +25,9 @@ getfenv().Config = {
 	["instant"] = true;
 
 	["AutoSukuna"] = false;
+	["Sukuna Hop"] = false;
+	["AutoHellhoundCursed"] = false;
+	["HellhoundCursed Hop"] = false;
 	
 	["Quest"] = "1-15";
 	["Distance"] = 5;
@@ -245,7 +248,13 @@ Groups.AutoFarm:Toggle("Auto Sukuna", (getfenv().Config["AutoSukuna"] or false),
 		else
 			if getfenv().Config["Sukuna Hop"] then
 				wait(30)
-				method.HopServer()
+				if getfenv().Config["Sukuna Hop"] and not User.Backpack:FindFirstChild("Sukuna Finger") then
+					method.HopServer()
+					else
+					if User.Backpack:FindFirstChild("Sukuna Finger") then
+						--User.PlayerGui.Dialogue.Ui.ChoiceSelectionHorizontal:GetChildren()[3].ButtonContraner.Button.Size = Udim2.new(100, 0, 100, 0)
+					end
+				end
 			end
 		end
 		until not getfenv().Config.AutoSukuna
@@ -254,4 +263,45 @@ end)
 
 Groups.AutoFarm:Toggle("Sukuna Hop", (getfenv().Config["Sukuna Hop"] or false), function(bool)
 	Change("Sukuna Hop", bool)
+end)
+
+Groups.AutoFarm:Toggle("Auto Hellhound Cursed", (getfenv().Config["AutoHellhoundCursed"] or false), function(bool)
+	Change("AutoHellhoundCursed", bool)
+	if getfenv().Config["AutoHellhoundCursed"] then
+		repeat task.wait() 
+			if not workspace.Lives:FindFirstChild("Sukuna") and workspace.Lives:FindFirstChild("Hellhound Cursed") then
+			for _, enemy : Model in next, workspace.Lives:GetChildren() do wait()
+				if not getfenv().Config["AutoHellhoundCursed"] then break end
+				if enemy:FindFirstChild("Folder") and enemy.Name == "Hellhound Cursed" and enemy:FindFirstChildOfClass("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") then
+					
+					repeat task.wait()
+						if method.ChackTag(enemy:FindFirstChild("Folder")) and isnetworkowner(enemy.HumanoidRootPart) then
+							enemy:FindFirstChild("Humanoid").Health = 0
+						else
+							User.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
+							method.Equip( method.GetTool(getfenv().Config.Tool) )
+							method.Click()
+						end
+					until not getfenv().Config["AutoHellhoundCursed"] or not User.Character or User.Character:FindFirstChild("Humanoid").Health <= 0
+					
+				end
+			end
+		else
+			if getfenv().Config["HellhoundCursed Hop"] then
+				wait(30)
+				if getfenv().Config["HellhoundCursed Hop"] and not User.Backpack:FindFirstChild("Sukuna Finger") then
+					method.HopServer()
+					else
+					if User.Backpack:FindFirstChild("Sukuna Finger") then
+						--User.PlayerGui.Dialogue.Ui.ChoiceSelectionHorizontal:GetChildren()[3].ButtonContraner.Button.Size = Udim2.new(100, 0, 100, 0)
+					end
+				end
+			end
+		end
+		until not getfenv().Config.AutoHellhoundCursed
+	end
+end)
+
+Groups.AutoFarm:Toggle("Hellhound Cursed Hop", (getfenv().Config["HellhoundCursed Hop"] or false), function(bool)
+	Change("HellhoundCursed Hop", bool)
 end)
