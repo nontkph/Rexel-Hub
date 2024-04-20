@@ -278,7 +278,7 @@ Groups.AutoFarm:Toggle("Auto Hellhound Cursed", (getfenv().Config["AutoHellhound
 						if method.ChackTag(enemy:FindFirstChild("Folder")) and isnetworkowner(enemy.HumanoidRootPart) then
 							enemy:FindFirstChild("Humanoid").Health = 0
 						else
-							User.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
+							User.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
 							method.Equip( method.GetTool(getfenv().Config.Tool) )
 							method.Click()
 						end
