@@ -28,7 +28,10 @@ getfenv().Config = {
 	["Sukuna Hop"] = false;
 	["AutoHellhoundCursed"] = false;
 	["HellhoundCursed Hop"] = false;
-	
+
+	["AutoRandomFruit"] = false;
+	["Randommethod"] = "Beli";
+
 	["Quest"] = "1-15";
 	["Distance"] = 5;
 }
@@ -53,7 +56,7 @@ end
 
 getfenv().Config = HttpService:JSONDecode( readfile(PathConfig) ) or getfenv().Config
 getfenv().Loaded = true
-repeat task.wait() until getfenv().Loaded
+repeat task.wait() until getfenv().Loaded and game.Loaded
 
 User.DisplayName = "Your mom"
 User.Name = "Your mom"
@@ -167,6 +170,22 @@ function method.GetTool(ToolName : string)
 	return result
 end
 
+method.DialogAction = function( TestRequest )
+    for i,v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.Ui.ChoiceSelection:GetChildren()) do
+        if v:IsA("ImageLabel") then
+            if v:FindFirstChild("Label").Text:find(TestRequest or "Yes") or (not TestRequest and v:FindFirstChild("Label").Text:find("..."))  then
+                v:FindFirstChild("ButtonContraner"):FindFirstChild("Button").Size = UDim2.new(10000,10000,10000,10000)
+                v:FindFirstChild("ButtonContraner"):FindFirstChild("Button").Position = UDim2.new(0.5,0.5,0)
+                v:FindFirstChild("ButtonContraner"):FindFirstChild("Button").AnchorPoint = Vector2.new(0.5,0.5)
+                v:FindFirstChild("ButtonContraner"):FindFirstChild("Button").BackgroundTransparency = 1
+
+                game:GetService('VirtualUser'):CaptureController()
+                game:GetService('VirtualUser'):ClickButton1(Vector2.new(0,0))
+            end
+        end
+    end
+end
+
 function method.HopServer()
 	if httprequest then
 		print("ServerHop. . .")
@@ -198,25 +217,53 @@ local Title_Label = Groups.AutoFarm:label(" : Auto Farm :")
 Groups.AutoFarm:Line()
 Groups.AutoFarm:Toggle("Auto Farm", (getfenv().Config["AutoFarm"] or false), function(bool)
 	Change("AutoFarm", bool)
-	print(bool)
 	if getfenv().Config.AutoFarm then
-		repeat task.wait() 
-			for _, enemy : Model in next, workspace.Lives:GetChildren() do wait()
-				if not getfenv().Config.AutoFarm then break end
-				if (if getfenv().Config.AutoSukuna then not workspace.Lives:FindFirstChild("Sukuna") else true ) and enemy:FindFirstChild("Folder") and enemy:FindFirstChildOfClass("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") then
-					
-					repeat task.wait()
-						if method.ChackTag(enemy:FindFirstChild("Folder")) then
-							enemy:FindFirstChild("Humanoid").Health = 0
-							warn("killed : ", enemy)
-						else
-							User.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
-							method.Equip( method.GetTool(getfenv().Config.Tool) )
-							method.Click()
+		repeat task.wait()
+
+			if User.Quest.Doing.Value == "None" then
+				if workspace["ShipNpc and SetSpawn NPC"]:FindFirstChild( getfenv().Config["Quest"] ) then
+					User.Character.HumanoidRootPart.CFrame = workspace["ShipNpc and SetSpawn NPC"]:FindFirstChild( getfenv().Config["Quest"] ).HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
+					local Prox = workspace["ShipNpc and SetSpawn NPC"]:FindFirstChild( getfenv().Config["Quest"] ):FindFirstChild("Proximity", true)
+					if Prox then
+						local NumButton = #game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.Ui.ChoiceSelection:GetChildren()
+						if NumButton == 1 then
+							fireproximityprompt( Prox)
+						elseif NumButton == 2 then
+							method.DialogAction()
+						elseif NumButton == 3 then
+							method.DialogAction("Yes")
 						end
-					until ( if getfenv().Config.AutoSukuna then workspace.Lives:FindFirstChild("Sukuna") ~= nil else false ) or not getfenv().Config.AutoFarm or not User.Character or User.Character:FindFirstChild("Humanoid").Health <= 0 or enemy:FindFirstChild("Humanoid").Health <= 0
-					
+						else
+						warn("not found Proximity")
+					end
 				end
+				else
+					for _, enemy : Model in next, workspace.Lives:GetChildren() do wait()
+						if not getfenv().Config.AutoFarm then break end
+						local NumButton = #game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.Ui.ChoiceSelection:GetChildren()
+						if NumButton == 2 then
+							method.DialogAction("...")
+						end
+						if (if getfenv().Config.AutoSukuna then not workspace.Lives:FindFirstChild("Sukuna") else true ) and enemy:FindFirstChild("Folder") and enemy:FindFirstChildOfClass("Humanoid") and enemy.Name:find(User.Quest.Doing.Value) and enemy:FindFirstChild("HumanoidRootPart") then
+							
+							repeat task.wait()
+								if method.ChackTag(enemy:FindFirstChild("Folder")) and isnetworkowner(enemy.HumanoidRootPart) then
+									enemy:FindFirstChild("Humanoid").Health = 0
+								else
+									if not User.Character:FindFirstChild("Buso") then
+										local args = {
+											[1] = "Buso"
+										}
+										game:GetService("ReplicatedStorage"):WaitForChild("Haki"):FireServer(unpack(args))								
+									end
+									User.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
+									method.Equip( method.GetTool(getfenv().Config.Tool) )
+									method.Click()
+								end
+							until ( if getfenv().Config.AutoSukuna then workspace.Lives:FindFirstChild("Sukuna") ~= nil else false ) or not getfenv().Config.AutoFarm or not User.Character or User.Character:FindFirstChild("Humanoid").Health <= 0 or enemy:FindFirstChild("Humanoid").Health <= 0
+							
+						end
+					end
 			end
 		until not getfenv().Config.AutoFarm
 	end
@@ -233,10 +280,15 @@ Groups.AutoFarm:Toggle("Auto Sukuna", (getfenv().Config["AutoSukuna"] or false),
 				if enemy:FindFirstChild("Folder") and enemy.Name == "Sukuna" and enemy:FindFirstChildOfClass("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") then
 					
 					repeat task.wait()
-						if method.ChackTag(enemy:FindFirstChild("Folder")) then
+						if method.ChackTag(enemy:FindFirstChild("Folder")) and isnetworkowner(enemy.HumanoidRootPart) then
 							enemy:FindFirstChild("Humanoid").Health = 0
-							warn("killed : ", enemy)
 						else
+							if not User.Character:FindFirstChild("Buso") then
+								local args = {
+									[1] = "Buso"
+								}
+								game:GetService("ReplicatedStorage"):WaitForChild("Haki"):FireServer(unpack(args))								
+							end
 							User.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
 							method.Equip( method.GetTool(getfenv().Config.Tool) )
 							method.Click()
@@ -278,6 +330,13 @@ Groups.AutoFarm:Toggle("Auto Hellhound Cursed", (getfenv().Config["AutoHellhound
 						if method.ChackTag(enemy:FindFirstChild("Folder")) and isnetworkowner(enemy.HumanoidRootPart) then
 							enemy:FindFirstChild("Humanoid").Health = 0
 						else
+							if not User.Character:FindFirstChild("Buso") then
+								local args = {
+									[1] = "Buso"
+								}
+								game:GetService("ReplicatedStorage"):WaitForChild("Haki"):FireServer(unpack(args))								
+							end
+
 							User.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
 							method.Equip( method.GetTool(getfenv().Config.Tool) )
 							method.Click()
@@ -304,4 +363,38 @@ end)
 
 Groups.AutoFarm:Toggle("Hellhound Cursed Hop", (getfenv().Config["HellhoundCursed Hop"] or false), function(bool)
 	Change("HellhoundCursed Hop", bool)
+end)
+
+local formathMethod = {
+	["Beli"] = [[250,000 Beli]];
+	["LP"] = [[1 LP]];
+}
+
+local dropdown_methodRandom = Groups["AutoFarm"]:DropDown( "Random method", { "Beli", "LP" }, false, (getfenv().Config["Randommethod"] or "Beli"), function(select)
+	Change( "Randommethod", select )
+end)
+
+
+Groups.AutoFarm:Toggle("Random Fruit", (getfenv().Config["AutoRandomFruit"] or false), function(bool)
+	pcall(function()
+		Change("AutoRandomFruit", bool)
+		if getfenv().Config["AutoRandomFruit"] then
+			repeat task.wait() 
+				User.Character.HumanoidRootPart.CFrame = workspace["ShipNpc and SetSpawn NPC"]:FindFirstChild("Random Fruit").HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
+					local Prox = workspace["ShipNpc and SetSpawn NPC"]:FindFirstChild( "Random Fruit" ):FindFirstChild("ProximityPrompt", true)
+					if Prox then
+						local NumButton = #game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.Ui.ChoiceSelection:GetChildren()
+						if NumButton == 1 then
+							fireproximityprompt( Prox)
+						elseif NumButton == 3 then
+							method.DialogAction("Yes")
+						elseif NumButton == 4 then
+							method.DialogAction( formathMethod[getfenv().Config["Randommethod"] or "Beli"] )
+						end
+						else
+						warn("not found Proximity")
+					end
+			until not getfenv().Config["AutoRandomFruit"]
+		end
+	end)
 end)
