@@ -244,7 +244,7 @@ Groups.AutoFarm:Toggle("Auto Farm", (getfenv().Config["AutoFarm"] or false), fun
 						if NumButton == 2 then
 							method.DialogAction("...")
 						end
-						if (if getfenv().Config.AutoSukuna then not workspace.Lives:FindFirstChild("Sukuna") else true ) and enemy:FindFirstChild("Folder") and enemy:FindFirstChildOfClass("Humanoid") and enemy.Name:find(User.Quest.Doing.Value) and enemy:FindFirstChild("HumanoidRootPart") then
+						if (if getfenv().Config.AutoSukuna then not workspace.Lives:FindFirstChild("Sukuna") else true ) and (if getfenv().Config["AutoHellhoundCursed"] then not workspace.Lives:FindFirstChild("Hellhound Cursed") else true ) and enemy:FindFirstChild("Folder") and enemy:FindFirstChildOfClass("Humanoid") and enemy.Name:find(User.Quest.Doing.Value) and enemy:FindFirstChild("HumanoidRootPart") then
 							
 							repeat task.wait()
 								if method.ChackTag(enemy:FindFirstChild("Folder")) and isnetworkowner(enemy.HumanoidRootPart) then
