@@ -60,7 +60,7 @@ repeat task.wait() until getfenv().Loaded and game.Loaded
 
 User.DisplayName = "Your mom"
 User.Name = "Your mom"
-game:GetService("Players").LocalPlayer.PlayerGui.NewInterGui.Frame.Username.Text = `Username: Your mom`
+game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("NewInterGui"):WaitForChild("Frame"):WaitForChild("Username").Text = `Username: Your mom`
 
 function Change(index, value)
 	getfenv().Config[index] = value
