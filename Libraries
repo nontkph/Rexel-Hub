@@ -168,7 +168,7 @@ function method.new( TitleText : string )
 	getfenv().Rexel.Interface = Relex
 	self.pages = Pages
 	self.main = Main
-	
+
 	-- Bind
 	getfenv().Rexel.Connect["Bind"] = UserinputService.InputBegan:Connect(function(input, processed)
 		if processed then return end
@@ -176,7 +176,7 @@ function method.new( TitleText : string )
 			Main.Visible = not Main.Visible
 		end
 	end)
-	
+
 	-- Drage Ui
 	task.defer(function()
 		local dragging
@@ -228,7 +228,7 @@ function method.new( TitleText : string )
 
 		RunService.Heartbeat:Connect(Update)
 	end)
-	
+
 	return self
 end
 
@@ -712,7 +712,7 @@ function Librarie:AddPage( PageName : string )
 				label_5.Position = UDim2.new(0, 0, 0.300000012, 0)
 				label_5.Size = UDim2.new(0.5, 0, 0, 10)
 				label_5.Font = Enum.Font.SourceSans
-				label_5.Text = "Toggle"
+				label_5.Text = Text or "Unknow"
 				label_5.TextColor3 = Color3.fromRGB(255, 255, 255)
 				label_5.TextSize = 14.000
 				label_5.TextXAlignment = Enum.TextXAlignment.Left
@@ -764,7 +764,7 @@ function Librarie:AddPage( PageName : string )
 
 					return result or 0
 				end
-				
+
 				local function Update()
 					local num = formatNumber(SlideOptions.value)
 					slide_2.Size = UDim2.new(tonumber(num) / max, 0, 1, 0)
@@ -810,14 +810,14 @@ function Librarie:AddPage( PageName : string )
 				Update()
 				return SlideOptions
 			end
-			
+
 			function GroupOptions:DropDown(Text : string, Items, MultiSelection, Default, callback)
-				
+
 				local DropDownOptions = {
 					items = Items;
 					Select = Default;
 				}
-				
+
 				-- Create instance
 				local dropdown = Instance.new("TextButton")
 				local label = Instance.new("TextLabel")
@@ -827,7 +827,7 @@ function Librarie:AddPage( PageName : string )
 				local UIListLayout = Instance.new("UIListLayout")
 				local UIPadding = Instance.new("UIPadding")
 				local UiStrokeDropdown = Instance.new("UIStroke")
-				
+
 				-- Config Property
 				dropdown.Name = Text or "Dropdown"
 				dropdown.Parent = Option_2
@@ -905,25 +905,25 @@ function Librarie:AddPage( PageName : string )
 				UIPadding.PaddingLeft = UDim.new(0, 2)
 				UIPadding.PaddingRight = UDim.new(0, 2)
 				UIPadding.PaddingTop = UDim.new(0, 2)
-				
+
 				UiStrokeDropdown.Name = "DropdownUiStroke"
 				UiStrokeDropdown.Parent = dropdown
 				UiStrokeDropdown.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 				UiStrokeDropdown.Color = Color3.fromRGB(47, 40, 57)
-				
-				
+
+
 				function DropDownOptions:Get()
 					return DropDownOptions.Select or {}
 				end
-				
+
 				local function CreateButton(TextLabel : string)
-					
+
 					-- Create Instance
 					local button = Instance.new("TextButton")
 					local label_2 = Instance.new("TextLabel")
 					local UICorner = Instance.new("UICorner")
 					local UiStrokeItem = Instance.new("UIStroke")
-					
+
 					-- Config Property
 					button.Name = TextLabel or "Button"
 					button.Parent = _itemlist
@@ -937,7 +937,7 @@ function Librarie:AddPage( PageName : string )
 					button.Text = ""
 					button.TextColor3 = Color3.fromRGB(0, 0, 0)
 					button.TextSize = 14.000
-					
+
 					UiStrokeItem.Name = "UiStrokeItem"
 					UiStrokeItem.Parent = button
 					UiStrokeItem.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -959,20 +959,20 @@ function Librarie:AddPage( PageName : string )
 
 					UICorner.CornerRadius = UDim.new(0.00999999978, 0)
 					UICorner.Parent = Items
-					
+
 					return button
 				end
-				
+
 				local Buttons = {}
 				local Signal = {}
-				
+
 				local function ClearSignal()
 					for index, value in next, Signal do
 						value:Disconnect()
 						Signal[index] = nil
 					end
 				end
-				
+
 				local function UpdateColor()
 					for _, Button in next, Buttons do
 						local result = if MultiSelection then table.find( DropDownOptions.Select, _ ) else DropDownOptions.Select == _
@@ -985,11 +985,11 @@ function Librarie:AddPage( PageName : string )
 						end
 					end
 				end
-				
+
 				local function SelectItem(item)
 					if MultiSelection then
 						DropDownOptions.Select = typeof(DropDownOptions.Select) == "table" and DropDownOptions.Select or {}
-						
+
 						local Alr = table.find( DropDownOptions.Select, item )
 						if Alr then
 							table.remove( DropDownOptions.Select, Alr )
@@ -1000,51 +1000,51 @@ function Librarie:AddPage( PageName : string )
 						DropDownOptions.Select = typeof(DropDownOptions.Select) ~= "table" and DropDownOptions.Select or ""
 						DropDownOptions.Select = item
 					end
-					
+
 					if callback and typeof(callback) == "function" then
 						task.defer(callback, DropDownOptions.Select)
 						UpdateColor()
 					end
 				end
-				
+
 				local function UpdateDropdown()
-					
+
 					-- clear
 					for index, value in next, Buttons do
 						value:Destroy()
 						Buttons[index] = nil
 					end
 					ClearSignal()
-					
+
 					-- create new
 					for index, value in next, DropDownOptions.items do
 
 						local Action = CreateButton( tostring(value) )
 						Buttons[value] = Action
-						
-						
+
+
 						-- Signal
 						Signal[value] = Action.MouseButton1Click:Connect(function()
 							SelectItem( value )
 						end)
-						
+
 					end
-					
+
 					UpdateColor()
 				end
-				
+
 				function DropDownOptions:Set(tabl : {})
 					DropDownOptions.items = tabl
 					UpdateDropdown()
 				end
-				
+
 				function DropDownOptions:Add(item : string)
 					table.insert( DropDownOptions.items, item )
 					local instanc = Buttons[item]
 					if instanc then instanc:Destroy() Buttons[item] = nil end
 					UpdateDropdown()
 				end
-				
+
 				function DropDownOptions:Remove(item : string)
 					local numtable = table.find( DropDownOptions.items, item )
 					if numtable then
@@ -1052,7 +1052,7 @@ function Librarie:AddPage( PageName : string )
 					end
 					UpdateDropdown()
 				end
-				
+
 				getfenv().Rexel.Connect[tostring(dropdown)..'click'] = dropdown.MouseButton1Click:Connect(function()
 					if Items.Visible then
 						Items.Visible = false
@@ -1065,7 +1065,7 @@ function Librarie:AddPage( PageName : string )
 						UpdateDropdown()
 					end
 				end)
-				
+
 				-- Aniamte
 				local enter = TweenService:Create( UiStrokeDropdown, TweenInfo.new(.25), {Color = Color3.fromRGB(74, 63, 90)} )
 				local leave = TweenService:Create( UiStrokeDropdown, TweenInfo.new(.25), {Color = Color3.fromRGB(47, 40, 57)} )
@@ -1076,11 +1076,11 @@ function Librarie:AddPage( PageName : string )
 				getfenv().Rexel.Connect[tostring(dropdown)..'leave'] = dropdown.MouseLeave:Connect(function(input)
 					leave:Play()
 				end)
-				
+
 				SelectItem(Default)
 				return DropDownOptions
 			end
-			
+
 			return GroupOptions
 		end
 	end
